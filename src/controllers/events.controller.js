@@ -1,5 +1,5 @@
 import { prisma } from "../config/db.js";
-import { EventDTO } from "../dto/event.dto.js";
+import { EventDTO, EventSummaryDTO } from "../dto/event.dto.js";
 
 export const getEventById = async (req, res) => {
   const { id } = req.params;
@@ -33,3 +33,16 @@ export const getEventById = async (req, res) => {
 
   return res.status(200).json(new EventDTO(event));
 };
+
+export const getAllEvents = async (req, res) => {
+
+  const events = await prisma.event.findMany({
+    orderBy: { start_date: "asc" }
+  });
+
+  if (events.length === 0) {
+    return res.status(404).json({ message: "No events found." });
+  }
+
+  return res.status(200).json(events.map((event) => (new EventSummaryDTO(event))));
+}

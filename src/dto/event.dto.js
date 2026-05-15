@@ -1,3 +1,21 @@
+export class EventSummaryDTO {
+  constructor(event) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+ 
+    const start = new Date(event.start_date);
+    const end = new Date(event.end_date);
+ 
+    this.id = event.id;
+    this.title = event.title;
+    this.description = event.description;
+    this.start_date = event.start_date;
+    this.end_date = event.end_date;
+    this.location = event.location;
+    this.is_live = today >= start && today <= end;
+  }
+}
+
 export class SessionSpeakerDTO {
   constructor(speaker) {
     this.id = speaker.id;
