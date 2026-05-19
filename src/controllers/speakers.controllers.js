@@ -1,4 +1,4 @@
-import { getSpeakerByIdService } from "../service/speaker.services.js";
+import { getSpeakerByIdService } from "../services/speakers.services.js";
 import { SpeakerPageDTO } from "../dto/speaker.dto.js";
 
 export const getSpeakerById = async (req, res) => {

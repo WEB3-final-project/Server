@@ -1,7 +1,7 @@
 import {
   findAllEvents,
   findEventById,
-} from "../service/event.service.js";
+} from "../services/events.services.js";
 
 import {
   EventDTO,
