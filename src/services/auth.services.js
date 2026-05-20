@@ -50,7 +50,10 @@ export const loginUser = async (body) => {
 };
 
 export const createUser = async (body, file) => {
-  const { bio, full_name, external_links, email, password, role } = body;
+  const { bio, full_name, email, password, role } = body;
+  const external_links = body.external_links
+  ? JSON.parse(body.external_links)
+  : null;
   const photo_url = file ? `/uploads/${file.filename}` : null;
 
   const validationError = validateCreateUserData(body);
