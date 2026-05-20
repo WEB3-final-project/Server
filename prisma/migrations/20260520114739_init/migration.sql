@@ -1,23 +1,37 @@
 -- CreateEnum
-CREATE TYPE "role_enum" AS ENUM ('admin', 'speaker');
+CREATE TYPE "role_enum" AS ENUM ('admin', 'speaker', 'participant');
 
 -- CreateTable
 CREATE TABLE "user" (
-    "id" VARCHAR(255) NOT NULL,
+    "id" TEXT NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password" TEXT NOT NULL,
-    "role" "role_enum" NOT NULL DEFAULT 'speaker',
+    "role" "role_enum" NOT NULL DEFAULT 'participant',
     "full_name" VARCHAR(255) NOT NULL,
     "bio" TEXT,
     "photo_url" TEXT,
     "external_links" JSONB,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "refreshToken" (
+    "id" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "refreshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "room" (
-    "id" VARCHAR(255) NOT NULL,
+    "id" TEXT NOT NULL,
     "name" VARCHAR(50) NOT NULL,
 
     CONSTRAINT "room_pkey" PRIMARY KEY ("id")
@@ -25,7 +39,7 @@ CREATE TABLE "room" (
 
 -- CreateTable
 CREATE TABLE "event" (
-    "id" VARCHAR(36) NOT NULL,
+    "id" TEXT NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT,
     "start_date" DATE NOT NULL,
@@ -37,14 +51,14 @@ CREATE TABLE "event" (
 
 -- CreateTable
 CREATE TABLE "session" (
-    "id" VARCHAR(255) NOT NULL,
+    "id" TEXT NOT NULL,
     "title" VARCHAR(255) NOT NULL,
     "description" TEXT,
     "start_time" TIMESTAMP(6) NOT NULL,
     "end_time" TIMESTAMP(6) NOT NULL,
     "capacity" INTEGER,
-    "event_id" VARCHAR(36) NOT NULL,
-    "room_id" VARCHAR(36) NOT NULL,
+    "event_id" TEXT NOT NULL,
+    "room_id" TEXT NOT NULL,
 
     CONSTRAINT "session_pkey" PRIMARY KEY ("id")
 );
@@ -52,8 +66,8 @@ CREATE TABLE "session" (
 -- CreateTable
 CREATE TABLE "session_speaker" (
     "id" SERIAL NOT NULL,
-    "session_id" VARCHAR(36) NOT NULL,
-    "speaker_id" VARCHAR(36) NOT NULL,
+    "session_id" TEXT NOT NULL,
+    "speaker_id" TEXT NOT NULL,
 
     CONSTRAINT "session_speaker_pkey" PRIMARY KEY ("id")
 );
@@ -65,7 +79,7 @@ CREATE TABLE "question" (
     "author_name" VARCHAR(255) DEFAULT 'anonymous',
     "upvotes" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "session_id" VARCHAR(36) NOT NULL,
+    "session_id" TEXT NOT NULL,
 
     CONSTRAINT "question_pkey" PRIMARY KEY ("id")
 );
@@ -74,7 +88,13 @@ CREATE TABLE "question" (
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "refreshToken_token_key" ON "refreshToken"("token");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "session_speaker_session_id_speaker_id_key" ON "session_speaker"("session_id", "speaker_id");
+
+-- AddForeignKey
+ALTER TABLE "refreshToken" ADD CONSTRAINT "refreshToken_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_event_id_fkey" FOREIGN KEY ("event_id") REFERENCES "event"("id") ON DELETE CASCADE ON UPDATE CASCADE;
