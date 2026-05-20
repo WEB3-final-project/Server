@@ -13,12 +13,12 @@ app.use(cors({
 }));
 app.use(cookieParser()); 
 app.use(express.json());
-
+app.use("/uploads", express.static("uploads"));
 app.use("/api", helloRoutes);
 app.use("/api", eventsRoutes);
 app.use("/api", speakersRoutes);
 
-app.use("/uploads", express.static("uploads"));
+
 app.use("/api/auth", authRoute);
 
 export default app;
