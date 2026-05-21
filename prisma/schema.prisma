@@ -38,7 +38,7 @@ model user {
   photo_url      String?
   external_links Json?
   created_at       DateTime @default(now())
-  updated_at      DateTime  @updatedAt
+  updated_at      DateTime?  @updatedAt
   deleted_at      DateTime?
 
   session_speakers session_speaker[]
