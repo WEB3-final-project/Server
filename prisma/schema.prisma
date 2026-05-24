@@ -31,9 +31,9 @@ enum role_enum {
 model user {
   id             String           @id @default(uuid())
   email          String           @unique @db.VarChar(255)
-  password       String
+  password       String?
   role           role_enum        @default(participant)
-  full_name      String?           @db.VarChar(255)
+  full_name      String           @db.VarChar(255)
   bio            String?
   photo_url      String?
   external_links Json?
@@ -44,6 +44,7 @@ model user {
   session_speakers session_speaker[]
   refresh_tokens refreshToken[]
 }
+
 model refreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
