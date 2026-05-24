@@ -1,6 +1,8 @@
 import {
   findAllEvents,
   findEventById,
+  createEvent,
+  updateEvent,
 } from "../services/events.services.js";
 
 import {
@@ -39,3 +41,55 @@ export const getAllEvents = async (req, res) => {
     )
   );
 };
+
+export async function createNewEvent(
+  req,
+  res,
+  next
+) {
+  try {
+    const event =
+      await createEvent(
+        req.body
+      );
+
+    res.status(201).json(event);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateEventById(
+  req,
+  res,
+  next
+) {
+  try {
+    const event =
+      await updateEvent(
+        req.params.id,
+        req.body
+      );
+
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getEvent(
+  req,
+  res,
+  next
+) {
+  try {
+    const event =
+      await eventService.getEventById(
+        req.params.id
+      );
+
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+}
