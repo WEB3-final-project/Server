@@ -3,6 +3,7 @@ import {
   findEventById,
   createEvent,
   updateEvent,
+  deleteEventService,
 } from "../services/events.services.js";
 
 import {
@@ -77,19 +78,32 @@ export async function updateEventById(
   }
 }
 
-export async function getEvent(
-  req,
-  res,
-  next
-) {
+export async function deleteEvent(req, res) {
   try {
-    const event =
-      await eventService.getEventById(
-        req.params.id
-      );
+    const { id } = req.params;
 
-    res.json(event);
+    if (!id) {
+      return res.status(400).json({ message: "L'ID de l'événement est requis." });
+    }
+
+    await deleteEventService(id);
+
+
+    return res.status(200).json({ 
+      success: true, 
+      message: "L'événement a été supprimé avec succès." 
+    });
+
   } catch (error) {
-    next(error);
+    console.error("Erreur dans deleteEvent Controller:", error);
+    
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+
+
+    return res.status(500).json({ 
+      message: "Une erreur interne est survenue lors de la suppression." 
+    });
   }
 }

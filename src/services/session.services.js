@@ -76,41 +76,22 @@ export async function getLiveSessions() {
   );
 }
 
-export async function getSessionsByRoom(roomId) {
-  const sessions = await prisma.session.findMany({
-    where: {
-      room_id: roomId,
-    },
-    include: {
-      speakers: {
-        include: {
-          speaker: true,
-        },
-      },
-    },
-    orderBy: {
-      start_time: "asc",
-    },
-  });
-
-  return sessions.map((session) => ({
-    ...session,
-    is_live: isSessionLive(
-      session.start_time,
-      session.end_time
-    ),
-  }));
-}
-
 export async function createSession(data) {
   const {
     speaker_ids,
+    start_time,
+    end_time,
+    capacity,
     ...sessionData
   } = data;
 
   return prisma.session.create({
     data: {
       ...sessionData,
+      start_time: new Date(start_time),
+      end_time: new Date(end_time),
+      
+      capacity: capacity && capacity !== "" ? parseInt(capacity, 10) : null,
 
       speakers: {
         create: speaker_ids.map((speakerId) => ({
@@ -136,28 +117,37 @@ export async function createSession(data) {
 export async function updateSession(id, data) {
   const {
     speaker_ids,
+    start_time,
+    end_time,
+    capacity,
     ...sessionData
   } = data;
+
+  const prismaUpdateData = { ...sessionData };
+
+  if (start_time) prismaUpdateData.start_time = new Date(start_time);
+  if (end_time) prismaUpdateData.end_time = new Date(end_time);
+  
+  if (capacity !== undefined) {
+    prismaUpdateData.capacity = capacity && capacity !== "" ? parseInt(capacity, 10) : null;
+  }
 
   return prisma.session.update({
     where: { id },
 
     data: {
-      ...sessionData,
+      ...prismaUpdateData,
 
       speakers: speaker_ids
         ? {
             deleteMany: {},
-
-            create: speaker_ids.map(
-              (speakerId) => ({
-                speaker: {
-                  connect: {
-                    id: speakerId,
-                  },
+            create: speaker_ids.map((speakerId) => ({
+              speaker: {
+                connect: {
+                  id: speakerId,
                 },
-              })
-            ),
+              },
+            })),
           }
         : undefined,
     },

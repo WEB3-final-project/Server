@@ -64,10 +64,8 @@ export async function updateEvent(
       title: data.title,
       description:
         data.description,
-      start_date:
-        data.start_date,
-      end_date:
-        data.end_date,
+      start_date: new Date(data.start_date), 
+      end_date: new Date(data.end_date),
       location: data.location,
     },
   });
@@ -96,5 +94,19 @@ export async function getEventById(id) {
         },
       },
     },
+  });
+}
+export async function deleteEventService(id) {
+  const eventExists = await prisma.event.findUnique({
+    where: { id }
+  });
+
+  if (!eventExists) {
+    const error = new Error("Événement introuvable");
+    error.statusCode = 404;
+    throw error;
+  }
+  return await prisma.event.delete({
+    where: { id }
   });
 }
