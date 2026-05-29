@@ -35,7 +35,7 @@ export const login = async (req, res) => {
 
 export const signUp = async (req, res) => {
   try {
-    const newUser = await createUser(req.body, req.file);
+    const newUser = await createUser(req.body);
     return res.status(201).json({ 
       message: `${newUser.role} registered`, 
       user: { id: newUser.id, email: newUser.email, full_name: newUser.full_name, role: newUser.role } 
