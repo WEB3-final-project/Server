@@ -88,7 +88,11 @@ export const createSpeakerService = async (data) => {
 
   return await prisma.user.create({
     data: {
-      ...data,
+      email,
+      full_name: data.full_name,
+      bio: data.bio,
+      photo_url: data.photo_url,
+      external_links: data.external_links,
       role: "speaker",
       password: null
     }

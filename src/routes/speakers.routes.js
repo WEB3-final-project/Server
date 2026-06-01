@@ -7,11 +7,14 @@ import {
     createSpeaker
 } from "../controllers/speakers.controllers.js";
 
+import { authMiddleware } from "../middlewares/auth.middlewares.js"
+
 const router = express.Router();
 
 router.get("/:id", getSpeakerById);
 router.get('/', getAllSpeakers);
-router.post("/", createSpeaker);
-router.delete("/:id", deleteSpeakerById);
-router.put("/:id", updateSpeakerById);
+router.post("/", authMiddleware, createSpeaker);
+router.delete("/:id", authMiddleware, deleteSpeakerById);
+router.put("/:id", authMiddleware, updateSpeakerById);
+
 export default router;
