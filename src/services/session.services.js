@@ -76,7 +76,10 @@ export async function getLiveSessions() {
   );
 }
 
-export async function createSession(data) {
+export async function createSession(data, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   const {
     speaker_ids,
     start_time,
@@ -114,7 +117,10 @@ export async function createSession(data) {
   });
 }
 
-export async function updateSession(id, data) {
+export async function updateSession(id, data, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   const {
     speaker_ids,
     start_time,
@@ -162,7 +168,10 @@ export async function updateSession(id, data) {
   });
 }
 
-export async function deleteSession(id) {
+export async function deleteSession(id, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.session.delete({
     where: { id },
   });

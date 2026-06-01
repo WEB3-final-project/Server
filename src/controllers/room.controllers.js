@@ -27,7 +27,7 @@ export async function getRoom(req, res, next) {
 export async function createRoom(req, res, next) {
   try {
     const room =
-      await roomService.createRoom(req.body);
+      await roomService.createRoom(req.body, req.user.role);
 
     res.status(201).json(room);
   } catch (error) {
@@ -40,7 +40,7 @@ export async function updateRoom(req, res, next) {
     const room =
       await roomService.updateRoom(
         req.params.id,
-        req.body
+        req.body, req.user.role
       );
 
     res.json(room);
@@ -52,7 +52,7 @@ export async function updateRoom(req, res, next) {
 export async function deleteRoom(req, res, next) {
   try {
     await roomService.deleteRoom(
-      req.params.id
+      req.params.id, req.user.role
     );
 
     res.json({

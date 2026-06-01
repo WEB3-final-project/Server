@@ -51,7 +51,7 @@ export async function createNewEvent(
   try {
     const event =
       await createEvent(
-        req.body
+        req.body, req.user.role
       );
 
     res.status(201).json(event);
@@ -69,7 +69,7 @@ export async function updateEventById(
     const event =
       await updateEvent(
         req.params.id,
-        req.body
+        req.body, req.user.role
       );
 
     res.json(event);
@@ -86,7 +86,7 @@ export async function deleteEvent(req, res) {
       return res.status(400).json({ message: "L'ID de l'événement est requis." });
     }
 
-    await deleteEventService(id);
+    await deleteEventService(id, req.user.role);
 
 
     return res.status(200).json({ 
