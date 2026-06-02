@@ -12,11 +12,24 @@ router.get(
 );
 
 router.get(
+  "/upcoming",
+  sessionController.getUpcomingSessions
+)
+
+router.get(
+  "/past",
+  sessionController.getPastSessions
+);
+
+router.get(
   "/room/:roomId",
   sessionController.getSessionsByRoom
 );
 
-router.get("/:id", sessionController.getSession);
+router.get(
+  "/:id",
+  sessionController.getSession
+);
 
 router.post(
   "/",

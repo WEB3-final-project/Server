@@ -57,7 +57,17 @@ export async function getSessionById(id) {
 }
 
 export async function getLiveSessions() {
-  const sessions = await prisma.session.findMany({
+  const now = new Date();
+
+  return prisma.session.findMany({
+    where: {
+      start_time: {
+        lte: now,
+      },
+      end_time: {
+        gte: now,
+      },
+    },
     include: {
       room: true,
       speakers: {
@@ -67,13 +77,64 @@ export async function getLiveSessions() {
       },
     },
   });
+}
 
-  return sessions.filter((session) =>
-    isSessionLive(
-      session.start_time,
-      session.end_time
-    )
-  );
+export async function getUpcomingSessions() {
+  const now = new Date();
+
+  const sessions = await prisma.session.findMany({
+    where: {
+      end_time: {
+        gte: now,
+      },
+    },
+    include: {
+      room: true,
+      event: true,
+      speakers: {
+        include: {
+          speaker: true,
+        },
+      },
+    },
+    orderBy: {
+      start_time: "asc",
+    },
+  });
+
+  return sessions.map((session) => ({
+    ...session,
+    is_live: isSessionLive(session.start_time, session.end_time),
+  }));
+}
+
+export async function getPastSessions() {
+  const now = new Date();
+
+  const sessions = await prisma.session.findMany({
+    where: {
+      end_time: {
+        lt: now,
+      },
+    },
+    include: {
+      room: true,
+      event: true,
+      speakers: {
+        include: {
+          speaker: true,
+        },
+      },
+    },
+    orderBy: {
+      start_time: "desc",
+    },
+  });
+
+  return sessions.map((session) => ({
+    ...session,
+    is_live: false,
+  }));
 }
 
 export async function createSession(data) {
@@ -90,7 +151,7 @@ export async function createSession(data) {
       ...sessionData,
       start_time: new Date(start_time),
       end_time: new Date(end_time),
-      
+
       capacity: capacity && capacity !== "" ? parseInt(capacity, 10) : null,
 
       speakers: {
@@ -127,7 +188,7 @@ export async function updateSession(id, data) {
 
   if (start_time) prismaUpdateData.start_time = new Date(start_time);
   if (end_time) prismaUpdateData.end_time = new Date(end_time);
-  
+
   if (capacity !== undefined) {
     prismaUpdateData.capacity = capacity && capacity !== "" ? parseInt(capacity, 10) : null;
   }
@@ -140,15 +201,15 @@ export async function updateSession(id, data) {
 
       speakers: speaker_ids
         ? {
-            deleteMany: {},
-            create: speaker_ids.map((speakerId) => ({
-              speaker: {
-                connect: {
-                  id: speakerId,
-                },
+          deleteMany: {},
+          create: speaker_ids.map((speakerId) => ({
+            speaker: {
+              connect: {
+                id: speakerId,
               },
-            })),
-          }
+            },
+          })),
+        }
         : undefined,
     },
 
