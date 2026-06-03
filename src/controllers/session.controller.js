@@ -64,6 +64,28 @@ export async function getSessionsByRoom(
   }
 }
 
+export async function getUpcomingSessions(req, res, next) {
+  try {
+    const sessions =
+      await sessionService.getUpcomingSessions();
+
+    res.json(sessions);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getPastSessions(req, res, next) {
+  try {
+    const sessions =
+      await sessionService.getPastSessions();
+      
+    res.json(sessions);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function createSession(
   req,
   res,
