@@ -24,6 +24,20 @@ enum role_enum {
   participant
 }
 
+enum audit_action {
+  create
+  update
+  delete
+}
+
+enum entity_type{
+  room
+  session
+  event
+  question
+  user
+}
+
 // ─────────────────────────────────────────────
 // MODELS
 // ─────────────────────────────────────────────
@@ -43,6 +57,7 @@ model user {
 
   session_speakers session_speaker[]
   refresh_tokens refreshToken[]
+  audit_logs audit_log[]
 }
 
 model refreshToken {
@@ -101,7 +116,7 @@ model session_speaker {
 }
 
 model question {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(uuid())
   content     String
   author_name String?  @default("anonymous") @db.VarChar(255)
   upvotes     Int      @default(0)
@@ -109,4 +124,18 @@ model question {
   session_id  String
 
   session session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+}
+
+
+model audit_log {
+  id          Int           @id @default(autoincrement())
+  user_id     String
+  action      audit_action
+  entity_type entity_type
+  entity_id   String
+  old_data    Json?
+  new_data    Json?
+  created_at  DateTime      @default(now())
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

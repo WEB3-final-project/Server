@@ -1,6 +1,7 @@
 import { prisma } from "../config/db.js";
 import { isSessionLive } from "../utils/session.utils.js";
-
+import { executeWithAudit } from "../utils/auditLog.utils.js";
+import { isExist } from "../validators/session.validators.js";
 export async function getAllSessions() {
   const sessions = await prisma.session.findMany({
     include: {
@@ -59,7 +60,7 @@ export async function getSessionById(id) {
 export async function getLiveSessions() {
   const now = new Date();
 
-  return prisma.session.findMany({
+  return await prisma.session.findMany({
     where: {
       start_time: {
         lte: now,
@@ -137,7 +138,8 @@ export async function getPastSessions() {
   }));
 }
 
-export async function createSession(data, userRole) {
+export async function createSession(data, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
@@ -149,36 +151,43 @@ export async function createSession(data, userRole) {
     ...sessionData
   } = data;
 
-  return prisma.session.create({
-    data: {
-      ...sessionData,
-      start_time: new Date(start_time),
-      end_time: new Date(end_time),
+  return executeWithAudit({
+    userId,
+    action: "create",
+    entityType: "session",
+    operation: () =>
+      prisma.session.create({
+        data: {
+          ...sessionData,
+          start_time: new Date(start_time),
+          end_time: new Date(end_time),
 
-      capacity: capacity && capacity !== "" ? parseInt(capacity, 10) : null,
+          capacity: capacity && capacity !== "" ? parseInt(capacity, 10) : null,
 
-      speakers: {
-        create: speaker_ids.map((speakerId) => ({
-          speaker: {
-            connect: {
-              id: speakerId,
+          speakers: {
+            create: speaker_ids.map((speakerId) => ({
+              speaker: {
+                connect: {
+                  id: speakerId,
+                },
+              },
+            })),
+          },
+        },
+
+        include: {
+          speakers: {
+            include: {
+              speaker: true,
             },
           },
-        })),
-      },
-    },
-
-    include: {
-      speakers: {
-        include: {
-          speaker: true,
         },
-      },
-    },
+      })
   });
 }
 
-export async function updateSession(id, data, userRole) {
+export async function updateSession(id, data, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
@@ -198,42 +207,58 @@ export async function updateSession(id, data, userRole) {
   if (capacity !== undefined) {
     prismaUpdateData.capacity = capacity && capacity !== "" ? parseInt(capacity, 10) : null;
   }
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "update",
+    entityType: "session",
+    entityId: id,
+    operation: () =>
+      prisma.session.update({
+        where: { id },
 
-  return prisma.session.update({
-    where: { id },
+        data: {
+          ...prismaUpdateData,
 
-    data: {
-      ...prismaUpdateData,
-
-      speakers: speaker_ids
-        ? {
-          deleteMany: {},
-          create: speaker_ids.map((speakerId) => ({
-            speaker: {
-              connect: {
-                id: speakerId,
-              },
-            },
-          })),
-        }
-        : undefined,
-    },
-
-    include: {
-      speakers: {
-        include: {
-          speaker: true,
+          speakers: speaker_ids
+            ? {
+              deleteMany: {},
+              create: speaker_ids.map((speakerId) => ({
+                speaker: {
+                  connect: {
+                    id: speakerId,
+                  },
+                },
+              })),
+            }
+            : undefined,
         },
-      },
-    },
+
+        include: {
+          speakers: {
+            include: {
+              speaker: true,
+            },
+          },
+        },
+      })
   });
 }
 
-export async function deleteSession(id, userRole) {
+export async function deleteSession(id, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.session.delete({
-    where: { id },
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "delete",
+    entityType: "session",
+    entityId: id,
+    operation: () =>
+      prisma.session.delete({
+        where: { id },
+      })
   });
 }
