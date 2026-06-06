@@ -79,7 +79,6 @@ export async function getPastSessions(req, res, next) {
   try {
     const sessions =
       await sessionService.getPastSessions();
-
     res.json(sessions);
   } catch (error) {
     next(error);

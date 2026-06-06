@@ -60,7 +60,7 @@ export async function getSessionById(id) {
 export async function getLiveSessions() {
   const now = new Date();
 
-  return await prisma.session.findMany({
+  return prisma.session.findMany({
     where: {
       start_time: {
         lte: now,
@@ -161,7 +161,6 @@ export async function createSession(data, userRole,
           ...sessionData,
           start_time: new Date(start_time),
           end_time: new Date(end_time),
-
           capacity: capacity && capacity !== "" ? parseInt(capacity, 10) : null,
 
           speakers: {
@@ -219,7 +218,6 @@ export async function updateSession(id, data, userRole,
 
         data: {
           ...prismaUpdateData,
-
           speakers: speaker_ids
             ? {
               deleteMany: {},
@@ -233,7 +231,6 @@ export async function updateSession(id, data, userRole,
             }
             : undefined,
         },
-
         include: {
           speakers: {
             include: {
