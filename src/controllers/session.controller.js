@@ -94,7 +94,7 @@ export async function createSession(
   try {
     const session =
       await sessionService.createSession(
-        req.body
+        req.body, req.user.role
       );
 
     res.status(201).json(session);
@@ -112,7 +112,7 @@ export async function updateSession(
     const session =
       await sessionService.updateSession(
         req.params.id,
-        req.body
+        req.body, req.user.role
       );
 
     res.json(session);
@@ -128,7 +128,7 @@ export async function deleteSession(
 ) {
   try {
     await sessionService.deleteSession(
-      req.params.id
+      req.params.id, req.user.role
     );
 
     res.json({

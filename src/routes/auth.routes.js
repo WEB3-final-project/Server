@@ -7,12 +7,11 @@ import {
 
 } from '../controllers/auth.controllers.js';
 import { authMiddleware } from '../middlewares/auth.middlewares.js';
-import { upload } from "../middlewares/upload.middlewares.js";
 const router = express.Router();
 
 router.post("/signup", signUp);
 router.post("/login", login);
 router.delete("/logout", authMiddleware, logout);
-router.post("/auth/refresh", checkLoginToken);
+router.post("/refresh", checkLoginToken);
 
 export default router;

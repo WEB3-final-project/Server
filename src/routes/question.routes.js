@@ -1,5 +1,5 @@
 import { Router } from "express";
-
+import { authMiddleware } from "../middlewares/auth.middlewares.js";
 import * as questionController from "../controllers/question.controllers.js";
 
 const router = Router();
@@ -21,6 +21,7 @@ router.patch(
 
 router.delete(
   "/:id",
+  authMiddleware,
   questionController.deleteQuestion
 );
 

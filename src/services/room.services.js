@@ -28,20 +28,29 @@ export async function getRoomById(id) {
   });
 }
 
-export async function createRoom(data) {
+export async function createRoom(data, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.room.create({
     data,
   });
 }
 
-export async function updateRoom(id, data) {
+export async function updateRoom(id, data, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.room.update({
     where: { id },
     data,
   });
 }
 
-export async function deleteRoom(id) {
+export async function deleteRoom(id, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.room.delete({
     where: { id },
   });

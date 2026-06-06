@@ -62,7 +62,10 @@ export async function upvoteQuestion(id) {
   });
 }
 
-export async function deleteQuestion(id) {
+export async function deleteQuestion(id, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.question.delete({
     where: {
       id: Number(id),

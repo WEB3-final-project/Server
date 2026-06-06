@@ -58,7 +58,7 @@ export async function deleteQuestion(
 ) {
   try {
     await questionService.deleteQuestion(
-      req.params.id
+      req.params.id, req.user.role
     );
 
     res.json({

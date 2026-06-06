@@ -38,7 +38,10 @@ export const findAllEvents = async () => {
   });
 };
 
-export async function createEvent(data) {
+export async function createEvent(data, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.event.create({
     data: {
       title: data.title,
@@ -53,8 +56,12 @@ export async function createEvent(data) {
 
 export async function updateEvent(
   id,
-  data
+  data,
+  userRole
 ) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   return prisma.event.update({
     where: {
       id,
@@ -96,7 +103,10 @@ export async function getEventById(id) {
     },
   });
 }
-export async function deleteEventService(id) {
+export async function deleteEventService(id, userRole) {
+  if (userRole !== 'admin') {
+    throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
+  }
   const eventExists = await prisma.event.findUnique({
     where: { id }
   });

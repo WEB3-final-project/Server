@@ -12,6 +12,7 @@ export const authMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
-    res.status(403).json({ message: "Invalid or expired token" });
+    console.error("JWT ERROR:", error);
+    res.status(401).json({ message: "Invalid or expired token" });
   }
 };

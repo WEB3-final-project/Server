@@ -13,8 +13,18 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 const app = express();
+
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:5173'];
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqué par CORS : Origine non autorisée'));
+    }
+  },
   credentials: true
 }));
 

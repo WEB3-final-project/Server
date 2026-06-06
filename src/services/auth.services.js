@@ -6,7 +6,7 @@ import { prisma } from "../config/db.js";
 
 export const loginUser = async (body) => {
   const { email, password } = body;
-  
+
   const validationError = validateLoginUser(body);
   if (validationError) {
     throw new Error(JSON.stringify({ status: 400, message: validationError }));
@@ -30,8 +30,8 @@ export const loginUser = async (body) => {
   );
 
   const refreshToken = jwt.sign(
-    { user_id: user.id }, 
-    process.env.REFRESH_TOKEN_SECRET, 
+    { user_id: user.id },
+    process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: '7d' }
   );
 
@@ -52,8 +52,8 @@ export const loginUser = async (body) => {
 export const createUser = async (body) => {
   const { bio, full_name, email, password, role } = body;
   const external_links = body.external_links
-  ? JSON.parse(body.external_links)
-  : null;
+    ? JSON.parse(body.external_links)
+    : null;
 
   const validationError = validateCreateUserData(body);
   if (validationError) {
@@ -103,7 +103,7 @@ export const logoutUser = async (userId, refreshToken) => {
   }
 
   await prisma.refreshToken.deleteMany({
-    where: { 
+    where: {
       user_id: userId,
       expires_at: { lt: new Date() }
     }
@@ -119,7 +119,7 @@ export const checkToken = async (refreshToken) => {
     where: { token: refreshToken },
     include: { user: true }
   });
-  
+
   if (!tokenInDb) {
     throw new Error(JSON.stringify({ status: 403, message: "Token revoked or invalid" }));
   }
@@ -137,14 +137,19 @@ export const checkToken = async (refreshToken) => {
       }
 
       const newAccessToken = jwt.sign(
-        { userId: tokenInDb.user.id, email: tokenInDb.user.email, role: tokenInDb.user.role },
+        {
+          id: tokenInDb.user.id,
+          email: tokenInDb.user.email,
+          role: tokenInDb.user.role
+        },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: '15m' }
+        { expiresIn: "15m" }
       );
 
       resolve({
         access_token: newAccessToken,
-        expires_in: 900
+        expires_in: 900,
+        role: tokenInDb.user.role
       });
     });
   });
