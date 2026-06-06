@@ -51,7 +51,8 @@ export async function createNewEvent(
   try {
     const event =
       await createEvent(
-        req.body, req.user.role
+        req.body, req.user.role,
+        req.user.id
       );
 
     res.status(201).json(event);
@@ -69,7 +70,8 @@ export async function updateEventById(
     const event =
       await updateEvent(
         req.params.id,
-        req.body, req.user.role
+        req.body, req.user.role,
+        req.user.id
       );
 
     res.json(event);
@@ -86,24 +88,25 @@ export async function deleteEvent(req, res) {
       return res.status(400).json({ message: "L'ID de l'événement est requis." });
     }
 
-    await deleteEventService(id, req.user.role);
+    await deleteEventService(id, req.user.role,
+      req.user.id);
 
 
-    return res.status(200).json({ 
-      success: true, 
-      message: "L'événement a été supprimé avec succès." 
+    return res.status(200).json({
+      success: true,
+      message: "L'événement a été supprimé avec succès."
     });
 
   } catch (error) {
     console.error("Erreur dans deleteEvent Controller:", error);
-    
+
     if (error.statusCode) {
       return res.status(error.statusCode).json({ message: error.message });
     }
 
 
-    return res.status(500).json({ 
-      message: "Une erreur interne est survenue lors de la suppression." 
+    return res.status(500).json({
+      message: "Une erreur interne est survenue lors de la suppression."
     });
   }
 }

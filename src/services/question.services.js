@@ -1,8 +1,9 @@
 import { prisma } from "../config/db.js";
 import { isSessionLive } from "../utils/session.utils.js";
-
+import { executeWithAudit } from "../utils/auditLog.utils.js";
+import { isExist } from "../validators/question.validators.js";
 export async function getQuestionsBySession(sessionId) {
-  return prisma.question.findMany({
+  return await prisma.question.findMany({
     where: {
       session_id: sessionId,
     },
@@ -40,7 +41,7 @@ export async function createQuestion(data) {
     );
   }
 
-  return prisma.question.create({
+  return await prisma.question.create({
     data: {
       content: data.content,
       author_name:
@@ -51,8 +52,8 @@ export async function createQuestion(data) {
 }
 
 export async function upvoteQuestion(id) {
-  return prisma.question.update({
-    where: { id: Number(id) },
+  return await prisma.question.update({
+    where: { id },
 
     data: {
       upvotes: {
@@ -62,13 +63,22 @@ export async function upvoteQuestion(id) {
   });
 }
 
-export async function deleteQuestion(id, userRole) {
+export async function deleteQuestion(id, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.question.delete({
-    where: {
-      id: Number(id),
-    },
+  isExist(id);
+  return  executeWithAudit({
+    userId,
+    action: "delete",
+    entityType: "question",
+    entityId: id,
+    operation: () =>
+      prisma.question.delete({
+        where: {
+          id,
+        },
+      })
   });
 }

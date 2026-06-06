@@ -1,7 +1,8 @@
 import { prisma } from "../config/db.js";
-
+import { executeWithAudit } from "../utils/auditLog.utils.js";
+import { isExist } from "../validators/room.validators.js";
 export async function getAllRooms() {
-  return prisma.room.findMany({
+  return await prisma.room.findMany({
     orderBy: {
       name: "asc",
     },
@@ -9,7 +10,7 @@ export async function getAllRooms() {
 }
 
 export async function getRoomById(id) {
-  return prisma.room.findUnique({
+  return await prisma.room.findUnique({
     where: { id },
     include: {
       sessions: {
@@ -28,30 +29,55 @@ export async function getRoomById(id) {
   });
 }
 
-export async function createRoom(data, userRole) {
+export async function createRoom(data, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.room.create({
-    data,
+  return executeWithAudit({
+    userId,
+    action: "create",
+    entityType: "room",
+    operation: () =>
+      prisma.room.create({
+        data,
+      })
   });
 }
 
-export async function updateRoom(id, data, userRole) {
+export async function updateRoom(id, data, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.room.update({
-    where: { id },
-    data,
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "update",
+    entityType: "room",
+    entityId: id,
+    operation: () =>
+      prisma.room.update({
+        where: { id },
+        data,
+      })
   });
 }
 
-export async function deleteRoom(id, userRole) {
+export async function deleteRoom(id, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.room.delete({
-    where: { id },
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "delete",
+    entityType: "room",
+    entityId: id,
+    operation: () =>
+      prisma.room.delete({
+        where: { id },
+      })
   });
 }

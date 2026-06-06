@@ -1,5 +1,6 @@
 import { prisma } from "../config/db.js";
-
+import { executeWithAudit } from "../utils/auditLog.utils.js";
+import { isExist } from "../validators/events.validators.js";
 export const findEventById = async (id) => {
   return await prisma.event.findUnique({
     where: { id },
@@ -38,48 +39,65 @@ export const findAllEvents = async () => {
   });
 };
 
-export async function createEvent(data, userRole) {
+export async function createEvent(data, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.event.create({
-    data: {
-      title: data.title,
-      description:
-        data.description,
-      start_date: new Date(data.start_date), 
-      end_date: new Date(data.end_date),
-      location: data.location,
-    },
+  return executeWithAudit({
+    userId,
+    action: "create",
+    entityType: "event",
+    entityId:null,
+    operation: () =>
+      prisma.event.create({
+        data: {
+          title: data.title,
+          description:
+            data.description,
+          start_date: new Date(data.start_date),
+          end_date: new Date(data.end_date),
+          location: data.location,
+        },
+      })
   });
 }
 
 export async function updateEvent(
   id,
   data,
-  userRole
+  userRole,
+  userId
 ) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  return prisma.event.update({
-    where: {
-      id,
-    },
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "update",
+    entityType: "event",
+    entityId: id,
+    operation: () =>
+      prisma.event.update({
+        where: {
+          id,
+        },
 
-    data: {
-      title: data.title,
-      description:
-        data.description,
-      start_date: new Date(data.start_date), 
-      end_date: new Date(data.end_date),
-      location: data.location,
-    },
+        data: {
+          title: data.title,
+          description:
+            data.description,
+          start_date: new Date(data.start_date),
+          end_date: new Date(data.end_date),
+          location: data.location,
+        },
+      })
   });
 }
 
 export async function getEventById(id) {
-  return prisma.event.findUnique({
+  return await prisma.event.findUnique({
     where: {
       id,
     },
@@ -103,20 +121,20 @@ export async function getEventById(id) {
     },
   });
 }
-export async function deleteEventService(id, userRole) {
+export async function deleteEventService(id, userRole,
+  userId) {
   if (userRole !== 'admin') {
     throw new Error(JSON.stringify({ status: 403, message: "Forbidden" }));
   }
-  const eventExists = await prisma.event.findUnique({
-    where: { id }
-  });
-
-  if (!eventExists) {
-    const error = new Error("Événement introuvable");
-    error.statusCode = 404;
-    throw error;
-  }
-  return await prisma.event.delete({
-    where: { id }
+  isExist(id);
+  return executeWithAudit({
+    userId,
+    action: "delete",
+    entityType: "event",
+    entityId: id,
+    operation: () =>
+       prisma.event.delete({
+        where: { id }
+      })
   });
 }

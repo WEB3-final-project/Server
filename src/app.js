@@ -7,7 +7,7 @@ import roomRoutes from "./routes/room.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
 import questionRoutes from "./routes/question.routes.js";
 import usersRoutes from "./routes/users.routes.js"
-
+import auditLogRoutes from "./routes/auditLog.routes.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -25,7 +25,8 @@ app.use(cors({
       callback(new Error('Bloqué par CORS : Origine non autorisée'));
     }
   },
-  credentials: true
+  credentials: true,
+  exposedHeaders: ['X-Total-Count']
 }));
 
 app.use(cookieParser()); 
@@ -40,6 +41,7 @@ app.use("/api/speakers", speakersRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/questions", questionRoutes);
+app.use("/api/audit-logs", auditLogRoutes);
 
 app.use(errorHandler);
 
