@@ -49,10 +49,13 @@ export const loginUser = async (body) => {
   return { access_token, refreshToken, expires_in, role: user.role };
 };
 
-export const createUser = async (body) => {
+export const createUser = async (body,file) => {
   const { bio, full_name, email, password, role } = body;
   const external_links = body.external_links
     ? JSON.parse(body.external_links)
+    : null;
+  const photo_url = file
+    ? `/uploads/${file.filename}`
     : null;
 
   const validationError = validateCreateUserData(body);
@@ -64,7 +67,7 @@ export const createUser = async (body) => {
 
   if (role === "speaker") {
     return await prisma.user.create({
-      data: { bio, full_name, external_links, email, password: hashedPassword, role: "speaker" }
+      data: { bio, full_name, external_links,photo_url, email, password: hashedPassword, role: "speaker" }
     });
   } else if (role === "participant") {
     return await prisma.user.create({
