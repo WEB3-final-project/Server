@@ -7,9 +7,12 @@ import {
 
 } from '../controllers/auth.controllers.js';
 import { authMiddleware } from '../middlewares/auth.middlewares.js';
+import multer from "multer";
+
+const upload = multer({ dest: "uploads/" });
 const router = express.Router();
 
-router.post("/signup", signUp);
+router.post("/signup",upload.single("photo_url"), signUp);
 router.post("/login", login);
 router.delete("/logout", authMiddleware, logout);
 router.post("/refresh", checkLoginToken);
