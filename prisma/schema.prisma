@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -14,9 +8,94 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─────────────────────────────────────────────
-// ENUM
-// ─────────────────────────────────────────────
+model user {
+  id               String            @id @default(uuid())
+  email            String            @unique @db.VarChar(255)
+  password         String?
+  role             role_enum         @default(participant)
+  full_name        String            @db.VarChar(255)
+  bio              String?
+  photo_url        String?
+  external_links   Json?
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+  deleted_at       DateTime?
+  audit_logs       audit_log[]
+  refresh_tokens   refreshToken[]
+  session_speakers session_speaker[]
+}
+
+model refreshToken {
+  id         String   @id @default(uuid())
+  token      String   @unique
+  user_id    String
+  created_at DateTime @default(now())
+  expires_at DateTime
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model room {
+  id       String    @id @default(uuid())
+  name     String    @db.VarChar(50)
+  sessions session[]
+}
+
+model event {
+  id          String    @id @default(uuid())
+  title       String    @db.VarChar(255)
+  description String?
+  start_date  DateTime  @db.Date
+  end_date    DateTime  @db.Date
+  location    String?   @db.VarChar(255)
+  sessions    session[]
+}
+
+model session {
+  id          String            @id @default(uuid())
+  title       String            @db.VarChar(255)
+  description String?
+  start_time  DateTime          @db.Timestamp(6)
+  end_time    DateTime          @db.Timestamp(6)
+  capacity    Int?
+  event_id    String
+  room_id     String
+  questions   question[]
+  event       event             @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  room        room              @relation(fields: [room_id], references: [id])
+  speakers    session_speaker[]
+}
+
+model session_speaker {
+  id         Int     @id @default(autoincrement())
+  session_id String
+  speaker_id String
+  session    session @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  speaker    user    @relation(fields: [speaker_id], references: [id], onDelete: Cascade)
+
+  @@unique([session_id, speaker_id])
+}
+
+model question {
+  id          String   @id @default(uuid())
+  content     String
+  author_name String?  @default("anonymous") @db.VarChar(255)
+  upvotes     Int      @default(0)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  session_id  String
+  session     session  @relation(fields: [session_id], references: [id], onDelete: Cascade)
+}
+
+model audit_log {
+  id          Int          @id @default(autoincrement())
+  user_id     String
+  action      audit_action
+  entity_type entity_type
+  entity_id   String
+  old_data    Json?
+  new_data    Json?
+  created_at  DateTime     @default(now())
+  user        user         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
 
 enum role_enum {
   admin
@@ -30,112 +109,10 @@ enum audit_action {
   delete
 }
 
-enum entity_type{
+enum entity_type {
   room
   session
   event
   question
   user
-}
-
-// ─────────────────────────────────────────────
-// MODELS
-// ─────────────────────────────────────────────
-
-model user {
-  id             String           @id @default(uuid())
-  email          String           @unique @db.VarChar(255)
-  password       String?
-  role           role_enum        @default(participant)
-  full_name      String           @db.VarChar(255)
-  bio            String?
-  photo_url      String?
-  external_links Json?
-  created_at       DateTime @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
-
-  session_speakers session_speaker[]
-  refresh_tokens refreshToken[]
-  audit_logs audit_log[]
-}
-
-model refreshToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  user_id    String
-  user      user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  created_at DateTime @default(now())
-  expires_at DateTime
-}
-
-model room {
-  id   String @id @default(uuid())
-  name String @db.VarChar(50)
-
-  sessions session[]
-}
-
-model event {
-  id          String   @id @default(uuid())
-  title       String   @db.VarChar(255)
-  description String?
-  start_date  DateTime @db.Date
-  end_date    DateTime @db.Date
-  location    String?  @db.VarChar(255)
-
-  sessions session[]
-}
-
-model session {
-  id          String   @id @default(uuid())
-  title       String   @db.VarChar(255)
-  description String?
-  start_time  DateTime @db.Timestamp(6)
-  end_time    DateTime @db.Timestamp(6)
-  capacity    Int?
-  event_id    String   
-  room_id     String  
-
-  event     event  @relation(fields: [event_id], references: [id], onDelete: Cascade)
-  room      room   @relation(fields: [room_id],  references: [id], onDelete: Restrict)
-
-  speakers  session_speaker[]
-  questions question[]
-}
-
-model session_speaker {
-  id         Int    @id @default(autoincrement())
-  session_id String 
-  speaker_id String 
-
-  session session @relation(fields: [session_id], references: [id], onDelete: Cascade)
-  speaker user    @relation(fields: [speaker_id], references: [id], onDelete: Cascade)
-
-  @@unique([session_id, speaker_id])
-}
-
-model question {
-  id          String   @id @default(uuid())
-  content     String
-  author_name String?  @default("anonymous") @db.VarChar(255)
-  upvotes     Int      @default(0)
-  created_at  DateTime @default(now()) @db.Timestamp(6)
-  session_id  String
-
-  session session @relation(fields: [session_id], references: [id], onDelete: Cascade)
-}
-
-
-model audit_log {
-  id          Int           @id @default(autoincrement())
-  user_id     String
-  action      audit_action
-  entity_type entity_type
-  entity_id   String
-  old_data    Json?
-  new_data    Json?
-  created_at  DateTime      @default(now())
-
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

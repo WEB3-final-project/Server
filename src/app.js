@@ -9,6 +9,7 @@ import questionRoutes from "./routes/question.routes.js";
 import usersRoutes from "./routes/users.routes.js"
 import auditLogRoutes from "./routes/auditLog.routes.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
+import statsRoutes from "./routes/stats.routes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -42,6 +43,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
+app.use("/api/stats", statsRoutes);
 
 app.use(errorHandler);
 
