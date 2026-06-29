@@ -25,4 +25,19 @@ router.delete(
   questionController.deleteQuestion
 );
 
+router.get(
+  "/",
+  questionController.getAllQuestions
+);
+
+router.get(
+  "/:id",
+  questionController.getQuestionById
+);
+
+router.put(
+  "/:id",
+  questionController.updateQuestion
+);
+
 export default router;
