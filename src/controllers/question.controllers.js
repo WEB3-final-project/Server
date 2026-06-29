@@ -69,3 +69,34 @@ export async function deleteQuestion(
     next(error);
   }
 }
+
+export async function getAllQuestions(req, res, next) {
+  try {
+    const questions = await questionService.getAllQuestions();
+    res.json(questions);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getQuestionById(req, res, next) {
+  try {
+    const question = await questionService.getQuestionById(req.params.id);
+    res.json(question);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateQuestion(req, res, next) {
+  try {
+    const question = await questionService.updateQuestion(
+      req.params.id,
+      req.body
+    );
+
+    res.json(question);
+  } catch (error) {
+    next(error);
+  }
+}

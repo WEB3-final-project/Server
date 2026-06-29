@@ -82,3 +82,24 @@ export async function deleteQuestion(id, userRole,
       })
   });
 }
+
+export async function getAllQuestions() {
+  return prisma.question.findMany();
+}
+
+export async function getQuestionById(id) {
+  return prisma.question.findUnique({
+    where: { id },
+  });
+}
+
+export async function updateQuestion(id, body) {
+  return prisma.question.update({
+    where: { id },
+    data: {
+      content: body.content,
+      author_name: body.author_name,
+      upvotes: body.upvotes,
+    },
+  });
+}
